@@ -1,11 +1,19 @@
-(function (buster, branch) {
+(function (buster, define) {
 
-	var assert, refute;
+	var branch, assert, refute;
 
 	assert = buster.assertions.assert;
 	refute = buster.assertions.refute;
 
-	buster.testCase('rest/interceptor/jsonp', {
+	buster.testCase('rest/interceptor/branch', {
+		setUp: function (done) {
+			if (branch) { return done(); }
+			define('rest/interceptor/branch-test', ['rest/interceptor/branch'], function (b) {
+				branch = b;
+				done();
+			});
+		},
+
 		'should return the `then` client when test is truthy': function (done) {
 			function expectedClient() { assert(true); done(); }
 			branch({
@@ -42,5 +50,8 @@
 
 }(
 	this.buster || require('buster'),
-	this.rest_interceptor_branch || require('../../src/rest/interceptor/branch')
+	typeof define === 'function' ? define : function (id, deps, factory) {
+		factory(require('../../src/rest/interceptor/branch'));
+	}
+	// Boilerplate for AMD and Node
 ));
