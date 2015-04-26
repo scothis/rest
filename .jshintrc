@@ -16,7 +16,7 @@
 
     "devel"         : false,     // defines globals that are usually used for logging poor-man's debugging: console, alert
     "es5"           : false,     // use ECMAScript 5 specific features such as getters and setters
-    "esnext"        : false,     // use ES.next specific features such as const
+    "esnext"        : true,      // use ES.next specific features such as const
     "nonstandard"   : false,     // defines non-standard but widely adopted globals such as escape and unescape
 
 
@@ -58,7 +58,7 @@
     "asi"           : false,     // suppresses warnings about missing semicolons
     "boss"          : false,     // suppresses warnings about the use of assignments in cases where comparisons are expected
     "debug"         : false,     // suppresses warnings about the debugger statements
-    "eqnull"        : false,     // suppresses warnings about == null comparisons
+    "eqnull"        : true,      // suppresses warnings about == null comparisons
     "evil"          : false,     // suppresses warnings about the use of eval
     "expr"          : false,     // suppresses warnings about the use of expressions where normally you would expect to see assignments or function calls
     "funcscope"     : false,     // suppresses warnings about declaring variables inside of control structures while accessing them later from the outside

@@ -1,48 +1,32 @@
 /*
- * Copyright 2012-2013 the original author or authors
+ * Copyright 2012-2015 the original author or authors
  * @license MIT, see LICENSE.txt for details
  *
  * @author Scott Andrews
  */
 
-(function (define) {
-	'use strict';
+import interceptor from '../interceptor';
+import base64 from '../util/base64';
 
-	define(function (require) {
+/**
+ * Authenticates the request using HTTP Basic Authentication (rfc2617)
+ *
+ * @param {Client} [client] client to wrap
+ * @param {string} config.username username
+ * @param {string} [config.password=''] password for the user
+ *
+ * @returns {Client}
+ */
+export default interceptor({
+	request(request, config) {
+		const headers = request.headers || (request.headers = {});
+		const username = request.username || config.username;
+		const password = request.password || config.password || '';
 
-		var interceptor, base64;
+		if (username) {
+			headers.Authorization = 'Basic ' + base64.encode(username + ':' + password);
+		}
 
-		interceptor = require('../interceptor');
-		base64 = require('../util/base64');
-
-		/**
-		 * Authenticates the request using HTTP Basic Authentication (rfc2617)
-		 *
-		 * @param {Client} [client] client to wrap
-		 * @param {string} config.username username
-		 * @param {string} [config.password=''] password for the user
-		 *
-		 * @returns {Client}
-		 */
-		return interceptor({
-			request: function handleRequest(request, config) {
-				var headers, username, password;
-
-				headers = request.headers || (request.headers = {});
-				username = request.username || config.username;
-				password = request.password || config.password || '';
-
-				if (username) {
-					headers.Authorization = 'Basic ' + base64.encode(username + ':' + password);
-				}
-
-				return request;
-			}
-		});
-
-	});
-
-}(
-	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
-	// Boilerplate for AMD and Node
-));
+		return request;
+	}
+});

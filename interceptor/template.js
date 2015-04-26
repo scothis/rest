@@ -5,50 +5,34 @@
  * @author Scott Andrews
  */
 
-(function (define) {
-	'use strict';
+import interceptor from '../interceptor';
+import uriTemplate from '../util/uriTemplate';
+import mixin from '../util/mixin';
 
-	define(function (require) {
+/**
+ * Applies request params to the path as a URI Template
+ *
+ * Params are removed from the request object, as they have been consumed.
+ *
+ * @param {Client} [client] client to wrap
+ * @param {Object} [config.params] default param values
+ * @param {string} [config.template] default template
+ *
+ * @returns {Client}
+ */
+export default interceptor({
+	init(config) {
+		config.params = config.params || {};
+		config.template = config.template || '';
+		return config;
+	},
+	request(request, config) {
+		const template = request.path || config.template;
+		const params = mixin({}, request.params, config.params);
 
-		var interceptor, uriTemplate, mixin;
+		request.path = uriTemplate.expand(template, params);
+		delete request.params;
 
-		interceptor = require('../interceptor');
-		uriTemplate = require('../util/uriTemplate');
-		mixin = require('../util/mixin');
-
-		/**
-		 * Applies request params to the path as a URI Template
-		 *
-		 * Params are removed from the request object, as they have been consumed.
-		 *
-		 * @param {Client} [client] client to wrap
-		 * @param {Object} [config.params] default param values
-		 * @param {string} [config.template] default template
-		 *
-		 * @returns {Client}
-		 */
-		return interceptor({
-			init: function (config) {
-				config.params = config.params || {};
-				config.template = config.template || '';
-				return config;
-			},
-			request: function (request, config) {
-				var template, params;
-
-				template = request.path || config.template;
-				params = mixin({}, request.params, config.params);
-
-				request.path = uriTemplate.expand(template, params);
-				delete request.params;
-
-				return request;
-			}
-		});
-
-	});
-
-}(
-	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
-	// Boilerplate for AMD and Node
-));
+		return request;
+	}
+});

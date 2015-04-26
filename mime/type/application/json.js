@@ -5,43 +5,31 @@
  * @author Scott Andrews
  */
 
-(function (define) {
-	'use strict';
+/**
+ * Create a new JSON converter with custom reviver/replacer.
+ *
+ * The extended converter must be published to a MIME registry in order
+ * to be used. The existing converter will not be modified.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON
+ *
+ * @param {function} [reviver=undefined] custom JSON.parse reviver
+ * @param {function|Array} [replacer=undefined] custom JSON.stringify replacer
+ */
+function createConverter(reviver, replacer) {
+	return {
 
-	define(function (/* require */) {
+		read(str) {
+			return JSON.parse(str, reviver);
+		},
 
-		/**
-		 * Create a new JSON converter with custom reviver/replacer.
-		 *
-		 * The extended converter must be published to a MIME registry in order
-		 * to be used. The existing converter will not be modified.
-		 *
-		 * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON
-		 *
-		 * @param {function} [reviver=undefined] custom JSON.parse reviver
-		 * @param {function|Array} [replacer=undefined] custom JSON.stringify replacer
-		 */
-		function createConverter(reviver, replacer) {
-			return {
+		write(obj) {
+			return JSON.stringify(obj, replacer);
+		},
 
-				read: function (str) {
-					return JSON.parse(str, reviver);
-				},
+		extend: createConverter
 
-				write: function (obj) {
-					return JSON.stringify(obj, replacer);
-				},
+	};
+}
 
-				extend: createConverter
-
-			};
-		}
-
-		return createConverter();
-
-	});
-
-}(
-	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
-	// Boilerplate for AMD and Node
-));
+export default createConverter();

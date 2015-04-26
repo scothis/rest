@@ -1,83 +1,64 @@
 /*
- * Copyright 2013-2014 the original author or authors
+ * Copyright 2013-2015 the original author or authors
  * @license MIT, see LICENSE.txt for details
  *
  * @author Scott Andrews
  */
 
-(function (define, XDomainRequest) {
-	'use strict';
+import UrlBuilder from '../UrlBuilder';
+import responsePromise from '../util/responsePromise';
+import client from '../client';
 
-	define(function (require) {
+export default client((request) => {
+	return responsePromise.promise((resolve, reject) => {
 
-		var when, UrlBuilder, responsePromise, client;
+		request = typeof request === 'string' ? { path: request } : request || {};
+		const response = { request: request };
 
-		when = require('when');
-		UrlBuilder = require('../UrlBuilder');
-		responsePromise = require('../util/responsePromise');
-		client = require('../client');
+		if (request.canceled) {
+			response.error = 'precanceled';
+			reject(response);
+			return;
+		}
 
-		return client(function xdr(request) {
-			return responsePromise.promise(function (resolve, reject) {
+		client = response.raw = new XDomainRequest();
 
-				var client, method, url, entity, response;
+		const entity = request.entity;
+		const method = request.method = request.method || (entity ? 'POST' : 'GET');
+		const url = new UrlBuilder(request.path || '', request.params).build();
 
-				request = typeof request === 'string' ? { path: request } : request || {};
-				response = { request: request };
+		try {
+			client.open(method, url);
 
-				if (request.canceled) {
-					response.error = 'precanceled';
-					reject(response);
-					return;
-				}
+			request.canceled = false;
+			request.cancel = () => {
+				request.canceled = true;
+				client.abort();
+				reject(response);
+			};
 
-				client = response.raw = new XDomainRequest();
+			client.onload = () => {
+				if (request.canceled) { return; }
+				// this is all we have access to on the XDR object :(
+				response.headers = { 'Content-Type': client.contentType };
+				response.entity = client.responseText;
+				resolve(response);
+			};
 
-				entity = request.entity;
-				request.method = request.method || (entity ? 'POST' : 'GET');
-				method = request.method;
-				url = new UrlBuilder(request.path || '', request.params).build();
+			client.onerror = () => {
+				response.error = 'loaderror';
+				reject(response);
+			};
 
-				try {
-					client.open(method, url);
+			// onprogress must be defined
+			client.onprogress = () => {};
 
-					request.canceled = false;
-					request.cancel = function cancel() {
-						request.canceled = true;
-						client.abort();
-						reject(response);
-					};
-
-					client.onload = function () {
-						if (request.canceled) { return; }
-						// this is all we have access to on the XDR object :(
-						response.headers = { 'Content-Type': client.contentType };
-						response.entity = client.responseText;
-						resolve(response);
-					};
-
-					client.onerror = function () {
-						response.error = 'loaderror';
-						reject(response);
-					};
-
-					// onprogress must be defined
-					client.onprogress = function () {};
-
-					client.send(entity);
-				}
-				catch (e) {
-					response.error = 'loaderror';
-					reject(response);
-				}
-
-			});
-		});
+			client.send(entity);
+		}
+		catch (e) {
+			response.error = 'loaderror';
+			reject(response);
+		}
 
 	});
-
-}(
-	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); },
-	typeof window !== 'undefined' ? window.XDomainRequest : void 0
-	// Boilerplate for AMD and Node
-));
+});

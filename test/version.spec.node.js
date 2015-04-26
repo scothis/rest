@@ -14,6 +14,8 @@
 
 		var mocha, chai, sinon, expect;
 
+		require('babel/register');
+
 		mocha = require('mocha');
 		chai = require('chai');
 		sinon = require('sinon');

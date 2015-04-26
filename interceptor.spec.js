@@ -15,6 +15,8 @@
 
 		var chai, sinon, expect;
 
+		require('babel/register');
+
 		chai = require('chai');
 		sinon = require('sinon');
 

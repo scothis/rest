@@ -45,7 +45,8 @@
 		"chai": "~1.10",
 		"sinon-chai": "~2.6",
 		"curl-amd": "~0.8",
-		"serv": "~0.2"
+		"serv": "~0.2",
+		"babel": "~5.1"
 	},
 	"main": "./node",
 	"browser": "./browser",
