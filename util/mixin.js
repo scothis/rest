@@ -7,6 +7,8 @@
 
 const empty = {};
 
+console.log('mixin');
+
 /**
  * Mix the properties from the source object into the destination object.
  * When the same property occurs in more then one object, the right most
